@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e7a3d">
+<title>Proyección de crecimiento — Arbitraje BCV → USDT</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e7a3d'/%3E%3Ctext x='32' y='44' font-family='Arial,sans-serif' font-size='28' font-weight='bold' text-anchor='middle' fill='white'%3E%24%3C/text%3E%3C/svg%3E">
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:#f2f5f3; color:#1c2b23; }
+  .wrap { max-width:640px; margin:0 auto; padding:16px 14px 40px; }
+  h1 { font-size:20px; margin:6px 0 2px; }
+  .sub { font-size:13px; color:#5c6f64; margin-bottom:14px; }
+  .nav { font-size:13px; margin-bottom:10px; }
+  .nav a { color:#0e7a3d; font-weight:700; text-decoration:none; }
+  .card { background:#fff; border-radius:14px; padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  .card h2 { font-size:14px; margin:0 0 10px; color:#0e7a3d; text-transform:uppercase; letter-spacing:.4px; }
+  .rates { display:flex; gap:10px; margin-bottom:8px; }
+  .rate { flex:1; background:#f6faf8; border:1px solid #dfe9e3; border-radius:10px; padding:10px; }
+  .rate .lbl { font-size:11px; color:#5c6f64; text-transform:uppercase; letter-spacing:.3px; }
+  .rate .val { font-size:18px; font-weight:800; margin:4px 0 2px; }
+  .rate .meta { font-size:11px; color:#7a8d82; }
+  .row { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+  .row:last-child { margin-bottom:0; }
+  label.f { flex:1; min-width:120px; font-size:12px; color:#43564b; display:block; }
+  label.f input, label.f select { width:100%; margin-top:4px; padding:9px 10px; font-size:15px; border:1px solid #cfd9d3; border-radius:9px; background:#fff; color:#1c2b23; }
+  .hint { font-size:11px; color:#7a8d82; margin-top:6px; line-height:1.45; }
+  .btn { width:100%; padding:12px; border:none; border-radius:10px; background:#0e7a3d; color:#fff; font-weight:800; font-size:15px; cursor:pointer; }
+  .btn:active { transform:scale(.99); }
+  .btn.ghost { background:#e7efe9; color:#0e7a3d; margin-top:8px; }
+  .hero { background:linear-gradient(135deg,#0e7a3d,#149a4e); color:#fff; border-radius:14px; padding:16px; margin-bottom:12px; }
+  .hero .t { font-size:13px; opacity:.9; }
+  .hero .big { font-size:26px; font-weight:800; margin:4px 0; }
+  .hero .d { font-size:13px; opacity:.92; line-height:1.5; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; margin-top:6px; }
+  th, td { padding:7px 6px; text-align:right; border-bottom:1px solid #edf1ee; }
+  th { color:#5c6f64; font-weight:600; font-size:11px; text-transform:uppercase; }
+  th:first-child, td:first-child { text-align:left; }
+  tr.hl td { background:#eaf6ee; font-weight:700; }
+  .tblwrap { overflow-x:auto; }
+  .status { font-size:12px; text-align:center; color:#5c6f64; margin:8px 0 0; min-height:18px; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:1px; }
+  .dot.ok { background:#16a34a; } .dot.bad { background:#b3261e; } .dot.wait { background:#d99a2b; }
+  .warnbox { background:#fdf3e7; border:1px solid #f0d9b5; color:#8a5a1e; border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nav"><a href="index.html">← Calculadora de arbitraje</a></div>
+  <h1>📈 Proyección de crecimiento</h1>
+  <div class="sub">Reinviertes las ganancias para abrir más cuentas y la bola de nieve hace lo suyo. Estimado con las tasas de hoy.</div>
+
+  <div class="card">
+    <h2>Tasas en vivo</h2>
+    <div class="rates">
+      <div class="rate">
+        <div class="lbl">BCV (Bs/$)</div>
+        <div class="val" id="rBcv">—</div>
+        <div class="meta" id="rBcvMeta">cargando…</div>
+      </div>
+      <div class="rate">
+        <div class="lbl">USDT (Bs)</div>
+        <div class="val" id="rUsdt">—</div>
+        <div class="meta" id="rUsdtMeta">cargando…</div>
+      </div>
+    </div>
+    <div class="status" id="status"><span class="dot wait"></span>Conectando…</div>
+    <div class="hint">Con las tasas de hoy: ganancia por operación ≈ <b id="hGanOp">—</b> · costo de una cuenta nueva ≈ <b id="hCosto">—</b>. Puedes ajustar ambos a mano abajo para simular otros escenarios.</div>
+  </div>
+
+  <div class="card">
+    <h2>Tu plan</h2>
+    <div class="row">
+      <label class="f">Cuentas iniciales
+        <input id="pCuentas" type="number" value="8" min="1" step="1">
+      </label>
+      <label class="f">Operaciones / semana por cuenta
+        <input id="pOps" type="number" value="5" min="1" step="1">
+      </label>
+      <label class="f">% a reinvertir
+        <input id="pPct" type="number" value="100" min="0" max="100" step="any">
+      </label>
+    </div>
+    <div class="row">
+      <label class="f">Ganancia por operación (USDT)
+        <input id="pGanOp" type="number" placeholder="auto" min="0" step="any">
+      </label>
+      <label class="f">Costo cuenta nueva (USDT)
+        <input id="pCosto" type="number" placeholder="auto" min="0" step="any">
+      </label>
+    </div>
+    <div class="row">
+      <label class="f">Mi meta es…
+        <select id="pMetaTipo">
+          <option value="cuentas">Llegar a N cuentas</option>
+          <option value="semanal">Ganar N USDT / semana</option>
+        </select>
+      </label>
+      <label class="f">Valor de la meta
+        <input id="pMetaVal" type="number" value="20" min="1" step="any">
+      </label>
+    </div>
+    <button class="btn" id="btnSim">Calcular proyección</button>
+    <button class="btn ghost" id="btnRefresh">↻ Actualizar tasas</button>
+  </div>
+
+  <div id="outHero"></div>
+
+  <div class="card" id="cardTabla" style="display:none">
+    <h2>Semana a semana</h2>
+    <div class="tblwrap">
+    <table>
+      <thead><tr><th>Semana</th><th>Cuentas</th><th>Ganancia sem.</th><th>Cuentas nuevas</th><th>Acumulado</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    </div>
+    <div class="hint">El "acumulado" es la ganancia total bruta. Lo no reinvertido (si tu % es menor a 100) queda fuera de la bola de nieve pero igual es tuyo.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var REFRESH_MS = 5 * 60 * 1000;
+  var S = { bcv:null, usdt:null, bcvOk:false, usdtOk:false, usdtSrc:'' };
+  var DER = { ganOp:null, costo:null }; // derivados de tasas en vivo
+
+  var PARAMS = ['pCuentas','pOps','pPct','pGanOp','pCosto','pMetaTipo','pMetaVal'];
+  function saveParams(){ try{ var o={}; PARAMS.forEach(function(k){ o[k]=$(k).value; }); localStorage.setItem('arb-proy', JSON.stringify(o)); }catch(e){} }
+  function loadParams(){ try{ var o=JSON.parse(localStorage.getItem('arb-proy')||'{}'); PARAMS.forEach(function(k){ if(o[k]!==undefined && o[k]!=='') $(k).value=o[k]; }); }catch(e){} }
+
+  function num(id, def){ var v=parseFloat($(id).value); return (isFinite(v)&&v>=0)?v:def; }
+  function fmtU(x){ return Number(x).toLocaleString('es-VE',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' USDT'; }
+  function fmtU2(x){ return Number(x).toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' USDT'; }
+  function fmtN(x){ return Number(x).toLocaleString('es-VE',{maximumFractionDigits:0}); }
+
+  function fetchBCV(){
+    return fetch('https://ve.dolarapi.com/v1/dolares').then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(arr){ for(var i=0;i<arr.length;i++){ if(arr[i].fuente==='oficial'&&arr[i].promedio){ S.bcv=parseFloat(arr[i].promedio); S.bcvOk=true; return; } } throw 0; });
+  }
+  function fetchUSDT_Binance(){
+    return fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search',{method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({asset:'USDT',fiat:'VES',merchantCheck:false,page:1,rows:10,tradeType:'BUY'})})
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(j){ var ps=(j.data||[]).map(function(d){return parseFloat(d.adv.price);}).filter(function(x){return isFinite(x)&&x>0;}).slice(0,5);
+      if(!ps.length) throw 0; S.usdt=ps.reduce(function(a,b){return a+b;},0)/ps.length; S.usdtSrc='Binance P2P'; S.usdtOk=true; });
+  }
+  function fetchUSDT_Paralelo(){
+    return fetch('https://ve.dolarapi.com/v1/dolares').then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(arr){ for(var i=0;i<arr.length;i++){ if(arr[i].fuente==='paralelo'&&arr[i].promedio){ S.usdt=parseFloat(arr[i].promedio); S.usdtSrc='Paralelo (est.)'; S.usdtOk=true; return; } } throw 0; });
+  }
+
+  function derive(){
+    // misma matemática de la calculadora: recargo 0.5%, neto = monto*(1-0.041-0.025)
+    if(S.bcvOk && S.usdtOk && S.bcv>0 && S.usdt>0){
+      var usdtVender = (500 * S.bcv * 1.005) / S.usdt;
+      DER.costo = usdtVender;
+      DER.ganOp = 500*0.934 - usdtVender;
+    } else { DER.costo=null; DER.ganOp=null; }
+    $('hGanOp').textContent = DER.ganOp!=null ? fmtU2(DER.ganOp) : '—';
+    $('hCosto').textContent = DER.costo!=null ? fmtU2(DER.costo) : '—';
+  }
+
+  function paintRates(){
+    $('rBcv').textContent = S.bcv? Number(S.bcv).toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    $('rBcvMeta').textContent = S.bcvOk ? 'en vivo' : 'sin conexión';
+    $('rUsdt').textContent = S.usdt? Number(S.usdt).toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    $('rUsdtMeta').textContent = S.usdtOk ? S.usdtSrc+' · en vivo' : 'sin conexión';
+  }
+
+  function refreshRates(silent){
+    if(!silent) $('status').innerHTML='<span class="dot wait"></span>Actualizando tasas…';
+    var p1=fetchBCV().catch(function(){ S.bcvOk=false; });
+    var p2=fetchUSDT_Binance().catch(function(){ return fetchUSDT_Paralelo().catch(function(){ S.usdtOk=false; }); });
+    Promise.all([p1,p2]).then(function(){
+      paintRates(); derive(); simulate(); saveParams();
+      $('status').innerHTML = (S.bcvOk&&S.usdtOk)
+        ? '<span class="dot ok"></span>Tasas al día · se refrescan cada 5 min'
+        : '<span class="dot bad"></span>Sin conexión — ajusta los valores a mano';
+    });
+  }
+
+  function effGanOp(){ var v=parseFloat($('pGanOp').value); return (isFinite(v)&&v>0)?v:DER.ganOp; }
+  function effCosto(){ var v=parseFloat($('pCosto').value); return (isFinite(v)&&v>0)?v:DER.costo; }
+
+  function simulate(){
+    var c0=Math.max(1,Math.round(num('pCuentas',8)));
+    var ops=Math.max(1,Math.round(num('pOps',5)));
+    var pct=Math.min(100,Math.max(0,num('pPct',100)))/100;
+    var gOp=effGanOp(), costo=effCosto();
+    var tipo=$('pMetaTipo').value, metaV=num('pMetaVal',20);
+    var hero=$('outHero'), card=$('cardTabla'), tb=$('tbody');
+    tb.innerHTML='';
+
+    if(!(gOp>0)){
+      hero.innerHTML='<div class="warnbox">Con las tasas actuales la ganancia por operación no es positiva (o las tasas no cargaron). Ajusta los valores a mano para simular.</div>';
+      card.style.display='none'; return;
+    }
+    if(!(costo>0)){
+      hero.innerHTML='<div class="warnbox">Falta el costo de una cuenta nueva (las tasas no cargaron). Ponlo a mano para simular.</div>';
+      card.style.display='none'; return;
+    }
+
+    var cuentas=c0, rem=0, acum=0, rows=[], hitWeek=0;
+    for(var w=1; w<=260; w++){
+      var gan=cuentas*ops*gOp;
+      acum+=gan;
+      var disp=gan*pct+rem;
+      var nuevas=Math.floor(disp/costo);
+      rem=disp-nuevas*costo;
+      cuentas+=nuevas;
+      rows.push({w:w, cuentas:cuentas, gan:gan, nuevas:nuevas, acum:acum});
+      var hit = (tipo==='cuentas') ? (cuentas>=metaV) : (gan>=metaV);
+      if(hit){ hitWeek=w; break; }
+    }
+
+    var last=rows[rows.length-1];
+    var fecha='—';
+    if(hitWeek){ var d=new Date(); d.setDate(d.getDate()+hitWeek*7);
+      fecha=d.toLocaleDateString('es-VE',{day:'numeric',month:'long',year:'numeric'}); }
+
+    if(hitWeek){
+      hero.innerHTML='<div class="hero"><div class="t">🎯 Llegas a tu meta en</div>'
+        +'<div class="big">'+hitWeek+' semana'+(hitWeek>1?'s':'')+'</div>'
+        +'<div class="d">Por allá del <b>'+fecha+'</b>, con <b>'+fmtN(last.cuentas)+' cuentas</b> '
+        +'ganando <b>'+fmtU(last.gan)+'/semana</b>.'+(tipo==='cuentas'?'':' (meta: '+fmtU(metaV)+'/sem)')+'</div></div>';
+    } else {
+      hero.innerHTML='<div class="warnbox">Con estos números no llegas a la meta en 5 años. Revisa los valores: quizás la ganancia por operación es muy baja o la meta muy alta.</div>';
+    }
+
+    var html='';
+    rows.forEach(function(r){
+      html+='<tr'+(r.w===hitWeek?' class="hl"':'')+'><td>Sem '+r.w+'</td><td>'+fmtN(r.cuentas)+'</td><td>'+fmtU(r.gan)+'</td><td>+'+r.nuevas+'</td><td>'+fmtU(r.acum)+'</td></tr>';
+    });
+    tb.innerHTML=html;
+    card.style.display='block';
+    saveParams();
+  }
+
+  loadParams();
+  PARAMS.forEach(function(k){ $(k).addEventListener('input', function(){ simulate(); saveParams(); }); });
+  $('btnSim').addEventListener('click', simulate);
+  $('btnRefresh').addEventListener('click', function(){ refreshRates(false); });
+  refreshRates(false);
+  setInterval(function(){ refreshRates(true); }, REFRESH_MS);
+})();
+</script>
+</body>
+</html>
