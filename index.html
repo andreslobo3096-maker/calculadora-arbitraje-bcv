@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e7a3d">
+<title>Calculadora Arbitraje BCV → USDT</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e7a3d'/%3E%3Ctext x='32' y='44' font-family='Arial,sans-serif' font-size='28' font-weight='bold' text-anchor='middle' fill='white'%3E%24%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e7a3d'/%3E%3Ctext x='32' y='44' font-family='Arial,sans-serif' font-size='28' font-weight='bold' text-anchor='middle' fill='white'%3E%24%3C/text%3E%3C/svg%3E">
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:#f2f5f3; color:#1c2b23; }
+  .wrap { max-width:560px; margin:0 auto; padding:16px 14px 40px; }
+  h1 { font-size:20px; margin:6px 0 2px; }
+  .sub { font-size:13px; color:#5c6f64; margin-bottom:14px; }
+  .card { background:#fff; border-radius:14px; padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  .card h2 { font-size:14px; margin:0 0 10px; color:#0e7a3d; text-transform:uppercase; letter-spacing:.4px; }
+  .rates { display:flex; gap:10px; }
+  .rate { flex:1; background:#f6faf8; border:1px solid #dfe9e3; border-radius:10px; padding:10px; }
+  .rate .lbl { font-size:11px; color:#5c6f64; text-transform:uppercase; letter-spacing:.3px; }
+  .rate .val { font-size:20px; font-weight:800; margin:4px 0 2px; }
+  .rate .meta { font-size:11px; color:#7a8d82; line-height:1.4; }
+  .rate .meta .warn { color:#b3541e; font-weight:600; }
+  .row { display:flex; gap:10px; margin-bottom:10px; }
+  .row:last-child { margin-bottom:0; }
+  label.f { flex:1; min-width:0; font-size:12px; color:#43564b; display:block; }
+  label.f input { width:100%; margin-top:4px; padding:9px 10px; font-size:15px; border:1px solid #cfd9d3; border-radius:9px; background:#fff; color:#1c2b23; }
+  label.f input:focus { outline:2px solid #0e7a3d55; border-color:#0e7a3d; }
+  .hint { font-size:11px; color:#7a8d82; margin-top:6px; line-height:1.45; }
+  .btn { width:100%; padding:12px; border:none; border-radius:10px; background:#0e7a3d; color:#fff; font-weight:800; font-size:15px; cursor:pointer; }
+  .btn:active { transform:scale(.99); }
+  .btn.ghost { background:#e7efe9; color:#0e7a3d; margin-top:8px; }
+  .kpi { display:flex; justify-content:space-between; align-items:baseline; padding:8px 0; border-bottom:1px dashed #e3eae6; font-size:14px; }
+  .kpi:last-child { border-bottom:none; }
+  .kpi .k { color:#43564b; }
+  .kpi .v { font-weight:700; text-align:right; }
+  .kpi.big .v { font-size:22px; color:#0e7a3d; }
+  .kpi.big.neg .v { color:#b3261e; }
+  .kpi .v small { display:block; font-weight:400; font-size:11px; color:#7a8d82; }
+  .formula { font-size:11.5px; color:#7a8d82; background:#f6faf8; border-radius:8px; padding:8px 10px; margin-top:10px; line-height:1.5; }
+  .status { font-size:12px; text-align:center; color:#5c6f64; margin:8px 0 0; min-height:18px; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:1px; }
+  .dot.ok { background:#16a34a; } .dot.bad { background:#b3261e; } .dot.wait { background:#d99a2b; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>💵 Arbitraje BCV → USDT</h1>
+  <div class="sub">Compras $ en el banco a BCV + recargo y vendes USDT al precio del día. Las tasas se actualizan solas.</div>
+
+  <div class="card">
+    <h2>Tasas en vivo</h2>
+    <div class="rates">
+      <div class="rate">
+        <div class="lbl">BCV (Bs/$)</div>
+        <div class="val" id="rBcv">—</div>
+        <div class="meta" id="rBcvMeta">cargando…</div>
+      </div>
+      <div class="rate">
+        <div class="lbl">USDT (Bs)</div>
+        <div class="val" id="rUsdt">—</div>
+        <div class="meta" id="rUsdtMeta">cargando…</div>
+      </div>
+    </div>
+    <button class="btn ghost" id="btnRefresh">↻ Actualizar tasas ahora</button>
+    <div class="status" id="status"><span class="dot wait"></span>Conectando…</div>
+    <div class="hint">El BCV se publica una vez al día (días hábiles). El USDT se toma del promedio de los avisos de compra en Binance P2P y se refresca cada 5 minutos. Si alguna fuente falla, puedes poner la tasa a mano abajo.</div>
+  </div>
+
+  <div class="card">
+    <h2>Tu operación</h2>
+    <div class="row">
+      <label class="f">Monto por cuenta ($)
+        <input id="inMonto" type="number" value="500" min="1" step="any">
+      </label>
+      <label class="f">Nº de cuentas
+        <input id="inCuentas" type="number" value="1" min="1" step="1">
+      </label>
+    </div>
+    <div class="row">
+      <label class="f">Tasa BCV manual (opcional)
+        <input id="inBcvMan" type="number" placeholder="auto" min="0" step="any">
+      </label>
+      <label class="f">Tasa USDT manual (opcional)
+        <input id="inUsdtMan" type="number" placeholder="auto" min="0" step="any">
+      </label>
+    </div>
+    <div class="hint">Si escribes una tasa manual, esa manda sobre la automática. Bórrala para volver al modo auto.</div>
+  </div>
+
+  <div class="card">
+    <h2>Comisiones (%)</h2>
+    <div class="row">
+      <label class="f">Recargo BCV
+        <input id="inRecargo" type="number" value="0.5" min="0" step="any">
+      </label>
+      <label class="f">Binance (tarjeta)
+        <input id="inComBin" type="number" value="4.1" min="0" step="any">
+      </label>
+      <label class="f">Banco Venezuela
+        <input id="inComBco" type="number" value="2.5" min="0" step="any">
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Resultado</h2>
+    <div class="kpi"><span class="k">Tasa de compra real (BCV + recargo)</span><span class="v" id="oTasaCompra">—</span></div>
+    <div class="kpi"><span class="k">Costo total en bolívares</span><span class="v" id="oCostoBs">—</span></div>
+    <div class="kpi"><span class="k">USDT a vender</span><span class="v" id="oUsdtVender">—</span></div>
+    <div class="kpi"><span class="k">Neto que llega a Binance</span><span class="v" id="oNeto">—<small id="oNetoDet"></small></span></div>
+    <div class="kpi big" id="kpiGan"><span class="k">Ganancia</span><span class="v" id="oGanancia">—<small id="oGananciaDet"></small></span></div>
+    <div class="kpi"><span class="k">% de ganancia</span><span class="v" id="oPct">—</span></div>
+    <div class="kpi"><span class="k">Tasa USDT de equilibrio</span><span class="v" id="oEquilibrio">—<small>mínima para no perder</small></span></div>
+    <div class="formula" id="formulaTxt"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var REFRESH_MS = 5 * 60 * 1000;
+
+  var S = { bcv:null, bcvTime:null, usdt:null, usdtTime:null, usdtSrc:'', bcvOk:false, usdtOk:false };
+
+  // ---- persistencia de parámetros ----
+  var PARAMS = ['inMonto','inCuentas','inRecargo','inComBin','inComBco','inBcvMan','inUsdtMan'];
+  function saveParams(){ try{ var o={}; PARAMS.forEach(function(k){ o[k]=$(k).value; }); localStorage.setItem('arb-bcv-usdt', JSON.stringify(o)); }catch(e){} }
+  function loadParams(){ try{ var o=JSON.parse(localStorage.getItem('arb-bcv-usdt')||'{}'); PARAMS.forEach(function(k){ if(o[k]!==undefined && o[k]!=='' ) $(k).value=o[k]; }); }catch(e){} }
+
+  function fmtBs(x){ return 'Bs ' + Number(x).toLocaleString('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function fmtUsdt(x){ return Number(x).toLocaleString('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2}) + ' USDT'; }
+  function fmtPct(x){ return (x>=0?'+':'') + Number(x).toLocaleString('es-VE',{minimumFractionDigits:2, maximumFractionDigits:2}) + ' %'; }
+  function fmtTime(d){ return d ? d.toLocaleString('es-VE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—'; }
+  function num(id, def){ var v=parseFloat($(id).value); return (isFinite(v)&&v>0)?v:def; }
+
+  // ---- fuentes en vivo ----
+  function fetchBCV(){
+    return fetch('https://ve.dolarapi.com/v1/dolares').then(function(r){
+      if(!r.ok) throw new Error('bcv http '+r.status);
+      return r.json();
+    }).then(function(arr){
+      var it=null;
+      for(var i=0;i<arr.length;i++){ if(arr[i].fuente==='oficial'){ it=arr[i]; break; } }
+      if(!it || !it.promedio) throw new Error('sin dato oficial');
+      S.bcv=parseFloat(it.promedio); S.bcvTime=new Date(it.fechaActualizacion); S.bcvOk=true;
+    });
+  }
+  function fetchUSDT_Binance(){
+    return fetch('https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({asset:'USDT',fiat:'VES',merchantCheck:false,page:1,rows:10,tradeType:'BUY'})
+    }).then(function(r){
+      if(!r.ok) throw new Error('p2p http '+r.status);
+      return r.json();
+    }).then(function(j){
+      var ps=(j.data||[]).map(function(d){ return parseFloat(d.adv.price); })
+                          .filter(function(x){ return isFinite(x)&&x>0; }).slice(0,5);
+      if(!ps.length) throw new Error('sin avisos');
+      var avg=ps.reduce(function(a,b){return a+b;},0)/ps.length;
+      S.usdt=avg; S.usdtTime=new Date(); S.usdtSrc='Binance P2P · prom. 5 avisos'; S.usdtOk=true;
+    });
+  }
+  function fetchUSDT_Paralelo(){
+    return fetch('https://ve.dolarapi.com/v1/dolares').then(function(r){
+      if(!r.ok) throw new Error('paralelo http '+r.status);
+      return r.json();
+    }).then(function(arr){
+      var it=null;
+      for(var i=0;i<arr.length;i++){ if(arr[i].fuente==='paralelo'){ it=arr[i]; break; } }
+      if(!it || !it.promedio) throw new Error('sin dato paralelo');
+      S.usdt=parseFloat(it.promedio); S.usdtTime=new Date(it.fechaActualizacion);
+      S.usdtSrc='Paralelo (estimado)'; S.usdtOk=true;
+    });
+  }
+
+  function paintRates(){
+    $('rBcv').textContent = S.bcv? Number(S.bcv).toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    $('rBcvMeta').innerHTML = S.bcvOk ? ('Actualizado: '+fmtTime(S.bcvTime)) : '<span class="warn">Sin conexión — usa manual</span>';
+    var manU=$('inUsdtMan').value, manB=$('inBcvMan').value;
+    $('rUsdt').textContent = S.usdt? Number(S.usdt).toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    var m=$('rUsdtMeta');
+    if(manU){ m.innerHTML='Modo manual'; }
+    else if(S.usdtOk){ m.innerHTML=S.usdtSrc+'<br>Actualizado: '+fmtTime(S.usdtTime); }
+    else { m.innerHTML='<span class="warn">Sin conexión — usa manual</span>'; }
+    if(manB){ $('rBcvMeta').innerHTML='Modo manual'; }
+  }
+
+  function refreshRates(silent){
+    if(!silent){ $('status').innerHTML='<span class="dot wait"></span>Actualizando tasas…'; }
+    var p1=fetchBCV().catch(function(){ S.bcvOk=false; });
+    var p2=fetchUSDT_Binance().catch(function(){ return fetchUSDT_Paralelo().catch(function(){ S.usdtOk=false; }); });
+    Promise.all([p1,p2]).then(function(){
+      paintRates(); calc(); saveParams();
+      var ok=S.bcvOk&&S.usdtOk;
+      $('status').innerHTML = ok
+        ? '<span class="dot ok"></span>Tasas al día · próximo refresco en 5 min'
+        : '<span class="dot bad"></span>Alguna tasa falló — revisa o usa manual';
+    });
+  }
+
+  // ---- cálculo ----
+  function calc(){
+    var monto=num('inMonto',500), cuentas=Math.max(1,Math.round(num('inCuentas',1)));
+    var recargo=num('inRecargo',0.5)/100;
+    var comBin=num('inComBin',4.1)/100, comBco=num('inComBco',2.5)/100;
+    var manB=parseFloat($('inBcvMan').value), manU=parseFloat($('inUsdtMan').value);
+    var bcv=(isFinite(manB)&&manB>0)?manB:S.bcv;
+    var usdt=(isFinite(manU)&&manU>0)?manU:S.usdt;
+    if(!(bcv>0)||!(usdt>0)){
+      ['oTasaCompra','oCostoBs','oUsdtVender','oNeto','oGanancia','oPct','oEquilibrio'].forEach(function(id){ $(id).firstChild.nodeValue='—'; });
+      $('oNetoDet').textContent=''; $('oGananciaDet').textContent=''; $('formulaTxt').textContent='';
+      $('kpiGan').className='kpi big';
+      return;
+    }
+    var tasaCompra=bcv*(1+recargo);
+    var costoBs=monto*cuentas*tasaCompra;
+    var usdtVender=costoBs/usdt;
+    var netoPc=monto*(1-comBin-comBco);
+    var netoTot=netoPc*cuentas;
+    var ganPc=netoPc-(usdtVender/cuentas);
+    var ganTot=netoTot-usdtVender;
+    var pct=usdtVender>0?(ganTot/usdtVender*100):0;
+    var equilibrio=(monto*tasaCompra)/netoPc;
+
+    $('oTasaCompra').textContent=fmtBs(tasaCompra);
+    $('oCostoBs').textContent=fmtBs(costoBs);
+    $('oUsdtVender').textContent=fmtUsdt(usdtVender);
+    $('oNeto').firstChild.nodeValue=fmtUsdt(netoTot);
+    $('oNetoDet').textContent=fmtUsdt(netoPc)+' por cuenta ('+monto+' − '+(comBin*100).toLocaleString('es-VE')+'% − '+(comBco*100).toLocaleString('es-VE')+'%)';
+    $('oGanancia').firstChild.nodeValue=fmtUsdt(ganTot);
+    $('oGananciaDet').textContent=fmtUsdt(ganPc)+' por cuenta · ≈ '+fmtBs(ganTot*usdt);
+    $('oPct').textContent=fmtPct(pct);
+    $('oEquilibrio').textContent=fmtBs(equilibrio);
+    $('kpiGan').className='kpi big'+(ganTot<0?' neg':'');
+    $('formulaTxt').textContent='USDT a vender = ('+monto+' × '+fmtBs(tasaCompra)+') ÷ '+fmtBs(usdt)+' · Ganancia = '+fmtUsdt(netoTot)+' − '+fmtUsdt(usdtVender)+'.';
+    paintRates();
+  }
+
+  // ---- wiring ----
+  loadParams();
+  PARAMS.forEach(function(k){ $(k).addEventListener('input', function(){ calc(); saveParams(); }); });
+  $('btnRefresh').addEventListener('click', function(){ refreshRates(false); });
+  refreshRates(false);
+  setInterval(function(){ refreshRates(true); }, REFRESH_MS);
+})();
+</script>
+</body>
+</html>
